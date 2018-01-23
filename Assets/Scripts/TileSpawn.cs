@@ -29,64 +29,64 @@ public class TileSpawn : MonoBehaviour {
 		return new Point[] {rect1, rect2};
 	}
 	
-	public void connect(Point[] points1, int num1, Point[] points2, int num2, int option){
+	public void connect(Point point1, Point point2, int option){
 		int breaker = 0;
-		int x = points1[num1].x;
-		int y = points1[num1].y;
-		if(points1[num1].x == points2[num2].x && points1[num1].y == points2[num2].y){
+		int x = point1.x;
+		int y = point1.y;
+		if(point1.x == point2.x && point1.y == point2.y){
 			if(!map[x,y].filled){
 				map[x,y] = new Tile(new Vector3(x,0,y));
 			}
 		}
 		else{
-			while((x != points2[num2].x || y != points2[num2].y) && breaker != 15) {
+			while((x != point2.x || y != point2.y) && breaker != 15) {
 				if(!map[x,y].filled){
 					map[x,y] = new Tile(new Vector3(x,0,y));
 				}
 				
 				if (option == 0){
-					if(points2[num2].x > x){x++;}
-					if(points2[num2].y > y){y++;}
+					if(point2.x > x){x++;}
+					if(point2.y > y){y++;}
 				}
 				else if (option == 1){
-					if(points1[num1].x > points2[num2].x){
-						if(points2[num2].x > x){x--;}
+					if(point1.x > point2.x){
+						if(point2.x > x){x--;}
 					}
-					else if(points2[num2].x > x){x++;}
-					if(points2[num2].y > y){y++;}
+					else if(point2.x > x){x++;}
+					if(point2.y > y){y++;}
 				}
 				else if (option == 2){
-					if(points2[num2].x < x){x--;}
-					if(points2[num2].y > y){y++;}
+					if(point2.x < x){x--;}
+					if(point2.y > y){y++;}
 				}
 				else if (option == 3){
-					if(points2[num2].x < x){x--;}
-					if(points1[num1].y > points2[num2].y){
-						if(points2[num2].y < y){y--;}
+					if(point2.x < x){x--;}
+					if(point1.y > point2.y){
+						if(point2.y < y){y--;}
 					}
-					else if(points2[num2].y > y){y++;}
+					else if(point2.y > y){y++;}
 				}
 				else if (option == 4){
-					if(points2[num2].x < x){x--;}
-					if(points2[num2].y < y){y--;}
+					if(point2.x < x){x--;}
+					if(point2.y < y){y--;}
 				}
 				else if (option == 5){
-					if(points1[num1].x > points2[num2].x){
-						if(points2[num2].x < x){x--;}
+					if(point1.x > point2.x){
+						if(point2.x < x){x--;}
 					}
-					else if(points2[num2].x < x){x++;}
-					if(points2[num2].y < y){y--;}
+					else if(point2.x < x){x++;}
+					if(point2.y < y){y--;}
 				}
 				else if (option == 6){
-					if(points2[num2].x > x){x++;}
-					if(points2[num2].y < y){y--;}
+					if(point2.x > x){x++;}
+					if(point2.y < y){y--;}
 				}
 				else if (option == 7){
-					if(points2[num2].x > x){x++;}
-					if(points2[num2].y > points1[num1].y){
-						if(points2[num2].y > y){y++;}
+					if(point2.x > x){x++;}
+					if(point2.y > point1.y){
+						if(point2.y > y){y++;}
 					}
-					else if(points2[num2].y < y){y--;}
+					else if(point2.y < y){y--;}
 				}
 				
 				breaker++;
@@ -118,14 +118,14 @@ public class TileSpawn : MonoBehaviour {
 
 		//Line Connecting Code
 		
-		connect(leftRects, 0, upperRects, 0, 0); //Connecting left to up
-		connect(upperRects, 0, upperRects, 1, 1); //Connecting up1 to up2
-		connect(upperRects, 1, rightRects, 0, 2); //Connecting upper to right	
-		connect(rightRects, 0, rightRects, 1, 3); //Connecting right1 to right2
-		connect(rightRects, 1, lowerRects, 0, 4); //Connecting right2 to lower
-		connect(lowerRects, 0, lowerRects, 1, 5); //Connecting lower to lower
-		connect(lowerRects, 1, leftRects, 1, 6); //Connecting lower to left
-		connect(leftRects, 1, leftRects, 0, 7); //Connecting left to left
+		connect(leftRects[0], upperRects[0], 0); //Connecting left to up
+		connect(upperRects[0], upperRects[1], 1); //Connecting up1 to up2
+		connect(upperRects[1], rightRects[0], 2); //Connecting upper to right	
+		connect(rightRects[0], rightRects[1], 3); //Connecting right1 to right2
+		connect(rightRects[1], lowerRects[0], 4); //Connecting right2 to lower
+		connect(lowerRects[0], lowerRects[1], 5); //Connecting lower to lower
+		connect(lowerRects[1], leftRects[1], 6); //Connecting lower to left
+		connect(leftRects[1], leftRects[0], 7); //Connecting left to left
 		
 		//Filling in the center of map
 		bool filled;
