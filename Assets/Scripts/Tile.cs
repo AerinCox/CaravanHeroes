@@ -19,7 +19,7 @@ public class Tile{
 		Renderer rend = self.GetComponent<Renderer>();
 		rend.material = Resources.Load("Textures/BasicTile") as Material;
 		this.self.AddComponent<Target>();
-		self.GetComponent<Target>().setType(Target.Type.UI);
+		self.GetComponent<Target>().setType(Target.Type.Tile);
 		self.transform.position = position;
 		this.filled = true;
 	}

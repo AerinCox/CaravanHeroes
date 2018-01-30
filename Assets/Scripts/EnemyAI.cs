@@ -33,14 +33,12 @@ public class EnemyAI : MonoBehaviour {
 					closest = character;
 				}
 				if (mySpd >= closestDistance) {
-					print("attacking character at: " + closest.getLocation().printPoint());
 					turn.changeTurn ();
 					return;
 				}
 			}
 
 			//Calculating movement
-			print ("moving towards: " + closest.getLocation().printPoint());
 			int xMovement = 0;
 			int yMovement = 0;
 			Point targetLocation = closest.getLocation();
@@ -70,11 +68,9 @@ public class EnemyAI : MonoBehaviour {
 				}
 			}
 			Point newLocation = new Point (myLocation.x + xMovement, myLocation.y + yMovement);
-			print ("First x movement: " + xMovement + " y movement: " + yMovement + " speed: " + mySpd);
 			// does a "y axis" preferred movement instead if x preferred movement did not work
 			if (mapPointer.getTile (newLocation).occupied == true || mapPointer.getTile (newLocation).filled == false) {
 				this.mySpd = self.getSpd();
-				print ("my speed: " + mySpd);
 				xMovement = 0;
 				yMovement = 0;
 				if (targetLocation.y > myLocation.y && mySpd > 0) {
@@ -103,13 +99,11 @@ public class EnemyAI : MonoBehaviour {
 				}
 				newLocation = new Point (myLocation.x + xMovement, myLocation.y + yMovement);
 			}
-			print ("Second x movement: " + xMovement + " y movement: " + yMovement + " speed: " + mySpd);
 			newLocation = new Point (myLocation.x + xMovement, myLocation.y + yMovement);
 			//Last resort if enemy could not go on tile of choice. 
 			while (mapPointer.getTile (newLocation).occupied == true || mapPointer.getTile (newLocation).filled == false) {
 				if (xMovement > 0) {
 					xMovement--;
-					print ("xMovement: " + xMovement);
 				} 
 				else if (yMovement > 0) {
 					yMovement--;
@@ -119,7 +113,6 @@ public class EnemyAI : MonoBehaviour {
 				} 
 				else if (xMovement < 0) {
 					xMovement++;
-					print ("xMovement: " + xMovement);
 				}
 				newLocation = new Point (myLocation.x + xMovement, myLocation.y + yMovement);
 

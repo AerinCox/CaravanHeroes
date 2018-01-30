@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Target : MonoBehaviour {
 
-	public enum Type {Unknown, UI, Player, Enemy};
+	public enum Type {Unknown, Tile, UI, Player, Enemy};
 	
 	public Type type;
 
