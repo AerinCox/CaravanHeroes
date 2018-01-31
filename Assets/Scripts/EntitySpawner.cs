@@ -21,7 +21,7 @@ public class EntitySpawner : MonoBehaviour {
 		g.name = "Swordman";
 		CharacterAttributes p = g.GetComponent<CharacterAttributes> ();
 		Point location = new Point (1, 1);
-		p.setAttributes(1, 1, 1, 1, location, g);
+		p.setAttributes(1, 1, 3, 3, location, g);
 		p.setSprite (Resources.Load("Sprites/swordman") as Sprite);
 		g.transform.position = new Vector3 (.7f, 1.5f, .6f);
 		g.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
