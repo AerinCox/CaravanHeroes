@@ -21,7 +21,7 @@ public class EntitySpawner : MonoBehaviour {
 		g.name = "Swordman";
 		CharacterAttributes p = g.GetComponent<CharacterAttributes> ();
 		Point location = new Point (1, 1);
-		p.setAttributes(1, 1, 3, 3, location, g);
+		p.setAttributes(1, 1, 3, 3, 1, location, g);
 		p.setSprite (Resources.Load("Sprites/swordman") as Sprite);
 		g.transform.position = new Vector3 (.7f, 1.5f, .6f);
 		g.transform.localScale = new Vector3(0.4f, 0.4f, 0.4f);
@@ -32,10 +32,11 @@ public class EntitySpawner : MonoBehaviour {
 		g = Instantiate(GameObject.Find("CharacterBase")) as GameObject;
 		g.SetActive (true);
 		g.name = "Ghoul";
+		Destroy(g.GetComponent<BoxCollider>());
 		p = g.GetComponent<CharacterAttributes> ();
 		g.AddComponent<EnemyAI> ();
 		location = new Point (3, 3);
-		p.setAttributes(1, 1, 1, 1, location, g);
+		p.setAttributes(1, 1, 1, 1, 1, location, g);
 		p.setSprite (Resources.Load<Sprite> ("Sprites/ghoul"));
 		g.transform.position = new Vector3 (2.5f, 1.5f, 2.5f);
 		g.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);

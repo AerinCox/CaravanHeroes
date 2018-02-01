@@ -17,7 +17,7 @@ public class Point{
 		return xCompare + yCompare;
 	}
 
-	public string printPoint(){
+	public string toString(){
 		return "X: " + this.x + " Y: " + this.y;
 	}
 	

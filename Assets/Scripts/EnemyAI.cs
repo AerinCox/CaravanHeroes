@@ -10,34 +10,36 @@ public class EnemyAI : MonoBehaviour {
 	private TurnSystem turn;
 	private EntitySpawner entitiesTable;
 	private CharacterAttributes self;
-	private int mySpd;
 	
 	void Start(){
 		this.mapPointer = GameObject.Find("MapCode").GetComponent<TileSpawn>();
 		this.turn = GameObject.Find("MapCode").GetComponent<TurnSystem>();
 		this.entitiesTable = GameObject.Find("MapCode").GetComponent<EntitySpawner>(); 
 		this.self = this.gameObject.GetComponent<CharacterAttributes> ();
-		this.mySpd = self.getSpd();
 	}
 	void Update(){
-		if(!turn.isPlayerTurn()){
+		if(!turn.isPlayerTurn() && !self.isDead){
 			//Find closest player
-			this.mySpd = self.getSpd();
+			int myAtkRange = self.getAtkRange();
+			int mySpd = self.getSpd();
 			Point myLocation = self.getLocation();
 			CharacterAttributes closest = null;
-			int closestDistance = 1000; //some arbitrary large distance
+			int closestDistance = 1000; //...some arbitrary large distance
 			foreach (CharacterAttributes character in entitiesTable.getPlayers()) {
 				int curr = character.getLocation().getDifference (myLocation);
-				if (curr < closestDistance) {
+				if (curr < closestDistance && !character.isDead) {
 					closestDistance = curr;
 					closest = character;
 				}
-				if (mySpd >= closestDistance) {
+				//If am close enough to attack, I attack.
+				if (myAtkRange >= closestDistance) {
+					AttackSystem.Attack(this.self, closest);
 					turn.changeTurn ();
 					return;
 				}
 			}
 
+			//Moving if not close enough to attack.
 			//Calculating movement
 			int xMovement = 0;
 			int yMovement = 0;
@@ -70,7 +72,7 @@ public class EnemyAI : MonoBehaviour {
 			Point newLocation = new Point (myLocation.x + xMovement, myLocation.y + yMovement);
 			// does a "y axis" preferred movement instead if x preferred movement did not work
 			if (mapPointer.getTile (newLocation).occupied == true || mapPointer.getTile (newLocation).filled == false) {
-				this.mySpd = self.getSpd();
+				mySpd = self.getSpd();
 				xMovement = 0;
 				yMovement = 0;
 				if (targetLocation.y > myLocation.y && mySpd > 0) {

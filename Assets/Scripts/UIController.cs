@@ -11,6 +11,7 @@ public class UIController : MonoBehaviour {
 	bool isSelecting;
 	GameObject npc; // currently selected target
 	TileSpawn mapPointer; 
+	EntitySpawner entities;
 	//private Tile[,] map;
 	HashSet<Point> highlighted; //if movement is selected, these are the tiles highlighted
 	TurnSystem turn;
@@ -20,19 +21,21 @@ public class UIController : MonoBehaviour {
 	public Button skipButton;
 	bool isMoving; //is the player currently in the move action?
 	bool isAttacking; //is player attacking
-	bool isSkipping; // is player skipping
+	//bool isSkipping; 
 
 	void Start () {
 		this.isMoving = false;
 		this.isSelecting = false;
 		this.isAttacking = false;
-		this.isSkipping = false;
-		mapPointer = GameObject.Find("MapCode").GetComponent<TileSpawn>();
+		//this.isSkipping = false;
+		this.mapPointer = GameObject.Find("MapCode").GetComponent<TileSpawn>();
+		this.entities = GameObject.Find("MapCode").GetComponent<EntitySpawner>();
 		//this.map = mapPointer.getMap();
 		Point.pointEqualityComparer comparer = new Point.pointEqualityComparer();
 		highlighted = new HashSet<Point>(comparer);
-		turn = GameObject.Find("MapCode").GetComponent<TurnSystem>();
+		this.turn = GameObject.Find("MapCode").GetComponent<TurnSystem>();
 		moveButton.onClick.AddListener(MoveAction);
+		attackButton.onClick.AddListener(AttackAction);
 		skipButton.onClick.AddListener(SkipAction);
 	}
 	
@@ -44,18 +47,42 @@ public class UIController : MonoBehaviour {
 			UnHighlight();
 			highlighted.Clear();
 			this.moveButton.GetComponent<Image>().color = Color.white;
+			return;
 		}
 		//Checking if person clicked two buttons at once (dont know if this can actually happen but..)
-		else if(isAttacking == true){ 
+		if (isAttacking == true){ 
 			isAttacking = false;
+			UnHighlight();
+			highlighted.Clear();
+			this.attackButton.GetComponent<Image>().color = Color.white;
 		}
 		//Shows the spaces the player can move, and enables moving.
-		else if(isSelecting){
+		if(isSelecting){
 			CharacterAttributes charInfo = npc.GetComponent<CharacterAttributes>(); 
 			Highlight(charInfo.getSpd(), charInfo.getLocation(), true);
 			this.isMoving = true;
 			this.moveButton.GetComponent<Image>().color = new Color(1f,.5f,.5f,1);
 		}
+	}
+	
+	void AttackAction(){
+		if(isMoving == true){
+			isMoving = false;
+			UnHighlight();
+			highlighted.Clear();
+			this.moveButton.GetComponent<Image>().color = Color.white;
+		}
+		if(isAttacking == true){
+			isAttacking = false;
+			UnHighlight();
+			highlighted.Clear();
+			this.attackButton.GetComponent<Image>().color = Color.white;
+			return;
+		}
+		this.isAttacking = true;
+		CharacterAttributes charInfo = npc.GetComponent<CharacterAttributes>(); 
+		Highlight(charInfo.getAtkRange(), charInfo.getLocation(), true);
+		this.attackButton.GetComponent<Image>().color = new Color(1f,.5f,.5f,1);
 	}
 	
 	void SkipAction(){
@@ -101,7 +128,7 @@ public class UIController : MonoBehaviour {
 			Highlight(movement, new Point(position.x, position.y - 1), false);
 		}
 		//Otherwise, recursively highlight area depending on player's speed.
-		else if(movement != 0 && mapPointer.getTile(position) != null && mapPointer.getTile(position).filled && !mapPointer.getTile(position).occupied)
+		else if(movement != 0 && mapPointer.getTile(position) != null && mapPointer.getTile(position).filled && (!mapPointer.getTile(position).occupied || isAttacking))
 		{
 			highlighted.Add(position);
 			GameObject temp = mapPointer.getTile(position).self;
@@ -126,11 +153,20 @@ public class UIController : MonoBehaviour {
 		this.highlighted.Clear();
 	}
 	
+	void UnHighlightButtons(){
+		this.moveButton.GetComponent<Image>().color = Color.white;
+		this.attackButton.GetComponent<Image>().color = Color.white;
+		this.isMoving = false;
+		this.isAttacking = false;
+		this.buttons.SetActive(false);
+
+	}
+	
 	void Update () {	
 		if(turn.isPlayerTurn()){
 			int i = 0;
-			/* while (i < Input.touchCount) {
-				if (Input.GetTouch(i).phase == TouchPhase.Began){ */
+			/*while (i < Input.touchCount) {
+				if (Input.GetTouch(i).phase == TouchPhase.Began && turn.isPlayerTurn()){ */
 				if (Input.GetMouseButtonDown (0) && turn.isPlayerTurn()){
 					RaycastHit rayTarget;
 					Vector3 fwd = transform.TransformDirection(Vector3.forward);
@@ -143,10 +179,12 @@ public class UIController : MonoBehaviour {
 						 
 						 //Selecting player 
 						 if(type.getType() == Target.Type.Player){
-							 this.isSelecting = true;
-							 this.buttons.SetActive(true);
-							 this.npc = target;
-							 PlayerHighlight(this.npc);
+							 if(!target.GetComponent<CharacterAttributes>().isDead){
+								 this.isSelecting = true;
+								 this.buttons.SetActive(true);
+								 this.npc = target;
+								 PlayerHighlight(this.npc);
+							 }
 						 }
 						 
 						 //Selecting tiles. Used for attacking or moving
@@ -180,7 +218,26 @@ public class UIController : MonoBehaviour {
 							
 							//Selecting the mob you want to attack (must press attack button first)
 							if(this.isAttacking){
-								//implement
+								Vector3 position = target.transform.position;
+								Point position2d = new Point((int)position.x, (int)position.z);
+								if(highlighted.Contains(position2d)){
+									foreach(CharacterAttributes c in entities.getEnemies()){
+										if(c.getLocation().getDifference(position2d) == 0){
+											AttackSystem.Attack(this.npc.GetComponent<CharacterAttributes>(), c);
+											//Unhighlighting map
+											UnHighlight();
+											highlighted.Clear();
+											this.turn.changeTurn();
+											this.isSelecting = false;
+											this.buttons.SetActive(false);
+											this.isAttacking = false;
+											PlayerUnhighlight(this.npc);
+											this.attackButton.GetComponent<Image>().color = Color.white;
+											this.npc = null;
+											break;
+										}
+									}
+								}
 							}
 						 }
 						 if(type.getType() == Target.Type.UI){
@@ -188,15 +245,12 @@ public class UIController : MonoBehaviour {
 						 }
 						 
 						 //deselecting (clicked on void area outside tiles)
-						 if(type.getType() == Target.Type.Unknown && npc != null){
+						 if(type.getType() == Target.Type.Unknown && npc != null && !npc.GetComponent<CharacterAttributes>().isDead){
 							PlayerUnhighlight(this.npc);
 							UnHighlight();
 							this.npc = null;
 							this.isSelecting = false;
-							this.buttons.SetActive(false);
-							//making sure none of the buttons have their previous states
-							this.isMoving = false;
-							this.moveButton.GetComponent<Image>().color = Color.white;
+							UnHighlightButtons();
 						 }
 					}
 					//this shouldn't happen.. void area has a collider to detect off map clicks
