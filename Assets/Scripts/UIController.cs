@@ -188,7 +188,7 @@ public class UIController : MonoBehaviour {
 						 }
 						 
 						 //deselecting (clicked on void area outside tiles)
-						 if(type.getType() == Target.Type.Unknown){
+						 if(type.getType() == Target.Type.Unknown && npc != null){
 							PlayerUnhighlight(this.npc);
 							UnHighlight();
 							this.npc = null;
