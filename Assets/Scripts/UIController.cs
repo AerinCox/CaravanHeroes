@@ -11,6 +11,7 @@ public class UIController : MonoBehaviour {
 	bool isSelecting;
 	GameObject npc; // currently selected target
 	TileSpawn mapPointer; 
+	AudioPlayer audioPlayer;
 	EntitySpawner entities;
 	//private Tile[,] map;
 	HashSet<Point> highlighted; //if movement is selected, these are the tiles highlighted
@@ -21,15 +22,16 @@ public class UIController : MonoBehaviour {
 	public Button skipButton;
 	bool isMoving; //is the player currently in the move action?
 	bool isAttacking; //is player attacking
-	//bool isSkipping; 
+	bool isSkipping;
 
 	void Start () {
 		this.isMoving = false;
 		this.isSelecting = false;
 		this.isAttacking = false;
-		//this.isSkipping = false;
+		this.isSkipping = false;
 		this.mapPointer = GameObject.Find("MapCode").GetComponent<TileSpawn>();
 		this.entities = GameObject.Find("MapCode").GetComponent<EntitySpawner>();
+		this.audioPlayer = GameObject.Find("MapCode").GetComponent<AudioPlayer>();
 		//this.map = mapPointer.getMap();
 		Point.pointEqualityComparer comparer = new Point.pointEqualityComparer();
 		highlighted = new HashSet<Point>(comparer);
@@ -95,7 +97,11 @@ public class UIController : MonoBehaviour {
 		PlayerUnhighlight(this.npc);
 		//Making buttons go away and setting flag for skipping turn to be true
 		this.buttons.SetActive(false);
-		this.turn.changeTurn();
+		CharacterAttributes npcInfo = npc.GetComponent<CharacterAttributes>();
+		this.turn.Action(npcInfo);
+		this.isSkipping = true;
+		this.npc = null;
+		this.isSelecting = false;
 	}
 	
 	//Highlights current target and the tile its on
@@ -164,9 +170,10 @@ public class UIController : MonoBehaviour {
 	
 	void Update () {	
 		if(turn.isPlayerTurn()){
-			int i = 0;
-			/*while (i < Input.touchCount) {
-				if (Input.GetTouch(i).phase == TouchPhase.Began && turn.isPlayerTurn()){ */
+			if(this.isSkipping){
+				this.isSkipping = false;
+				return;
+			}
 				if (Input.GetMouseButtonDown (0) && turn.isPlayerTurn()){
 					RaycastHit rayTarget;
 					Vector3 fwd = transform.TransformDirection(Vector3.forward);
@@ -179,16 +186,24 @@ public class UIController : MonoBehaviour {
 						 
 						 //Selecting player 
 						 if(type.getType() == Target.Type.Player){
-							 if(!target.GetComponent<CharacterAttributes>().isDead){
+							 if(!target.GetComponent<CharacterAttributes>().isDead && target.GetComponent<CharacterAttributes>().isSelectable()){
+								if(this.isSelecting == true && target.GetInstanceID() != this.npc.GetInstanceID()){
+									PlayerUnhighlight(this.npc);
+									UnHighlight();
+									this.npc = target;
+									PlayerHighlight(this.npc);	
+								}
+								else{
 								 this.isSelecting = true;
 								 this.buttons.SetActive(true);
 								 this.npc = target;
 								 PlayerHighlight(this.npc);
+								}
 							 }
 						 }
 						 
 						 //Selecting tiles. Used for attacking or moving
-						 if(type.getType() == Target.Type.Tile){
+						 else if(type.getType() == Target.Type.Tile){
 							if(this.isMoving){
 								Vector3 position = target.transform.position;
 								Point position2d = new Point((int)position.x, (int)position.z);
@@ -200,13 +215,24 @@ public class UIController : MonoBehaviour {
 									currentTile.self.GetComponent<Renderer>().material.color = Color.white;
 									npcInfo.setLocation(position2d);
 									mapPointer.getTile(position2d).occupied = true;
-									//Moving character
-									position += new Vector3(-0.3f,1.5f,-0.4f);
-									npc.transform.position = position;
+									//Moving character.. have to account for size differences.... brb sobbing
+									if(npcInfo.getJob() == CharacterAttributes.Job.Swordman){
+										position += new Vector3(-0.3f,1.5f,-0.4f);
+										npc.transform.position = position;
+									}
+									else if(npcInfo.getJob() == CharacterAttributes.Job.Archer){
+										position += new Vector3(-0.1f,1.5f,-0.44f);
+										npc.transform.position = position;
+									}
+									else if(npcInfo.getJob() == CharacterAttributes.Job.Cleric){
+										position += new Vector3(-0.09f,1.5f,-0.37f);
+										npc.transform.position = position;
+									}
+									
 									//Unhighlighting map
 									UnHighlight();
 									highlighted.Clear();
-									turn.changeTurn();
+									this.turn.Action(npcInfo);
 									isSelecting = false;
 									buttons.SetActive(false);
 									this.isMoving = false;
@@ -223,11 +249,20 @@ public class UIController : MonoBehaviour {
 								if(highlighted.Contains(position2d)){
 									foreach(CharacterAttributes c in entities.getEnemies()){
 										if(c.getLocation().getDifference(position2d) == 0){
+											if(npc.GetComponent<CharacterAttributes>().getJob() == CharacterAttributes.Job.Swordman){
+												/*Animator a = npc.GetComponent<Animator>();
+												a.SetBool("attacking", true);*/
+												audioPlayer.playSwordAttack();
+											}
+											if(npc.GetComponent<CharacterAttributes>().getJob() == CharacterAttributes.Job.Archer){
+												audioPlayer.playBowAttack();
+											}
 											AttackSystem.Attack(this.npc.GetComponent<CharacterAttributes>(), c);
 											//Unhighlighting map
 											UnHighlight();
 											highlighted.Clear();
-											this.turn.changeTurn();
+											CharacterAttributes npcInfo = npc.GetComponent<CharacterAttributes>();
+											this.turn.Action(npcInfo);
 											this.isSelecting = false;
 											this.buttons.SetActive(false);
 											this.isAttacking = false;
@@ -240,12 +275,12 @@ public class UIController : MonoBehaviour {
 								}
 							}
 						 }
-						 if(type.getType() == Target.Type.UI){
+						 else if(type.getType() == Target.Type.UI){
 							 //No use for this right now lol
 						 }
 						 
 						 //deselecting (clicked on void area outside tiles)
-						 if(type.getType() == Target.Type.Unknown && npc != null && !npc.GetComponent<CharacterAttributes>().isDead){
+						 else if(type.getType() == Target.Type.Unknown && npc != null && !npc.GetComponent<CharacterAttributes>().isDead){
 							PlayerUnhighlight(this.npc);
 							UnHighlight();
 							this.npc = null;
@@ -258,8 +293,6 @@ public class UIController : MonoBehaviour {
 						print("colliders not catching full area");
 					}
 				}
-				i++;
 			}
-		/*}*/
 	}
 }

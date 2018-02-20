@@ -98,12 +98,12 @@ public class TileSpawn : MonoBehaviour {
 	}
 
 	void Start () {
-		//Temporarily only for 5x5 map
+		//Temporarily only for 7x7 map
 		//Tile root = new Tile(new Vector3(0,0,0));
 		//Vector3 position;
-		this.map = new Tile[5,5];
-		for(int i = 0; i < 5; i++){
-			for(int j = 0; j < 5; j++){
+		this.map = new Tile[7,7];
+		for(int i = 0; i < 7; i++){
+			for(int j = 0; j < 7; j++){
 				map[i,j] = new Tile();
 			}
 		}
@@ -111,10 +111,10 @@ public class TileSpawn : MonoBehaviour {
 		// Using idea from http://www.roguebasin.com/index.php?title=Irregular_Shaped_Rooms to generate irregular shaped rooms
 		//Getting left rectangle points
 		
-		Point[] leftRects = getPoints(1,4,0,2);
-		Point[] upperRects = getPoints(3,5,1,4);
-		Point[] rightRects = getPoints(1,4,3,5);
-		Point[] lowerRects = getPoints(0,2,1,4);
+		Point[] leftRects = getPoints(1,6,0,3);
+		Point[] upperRects = getPoints(3,7,1,6);
+		Point[] rightRects = getPoints(1,6,3,7);
+		Point[] lowerRects = getPoints(0,4,1,6);
 
 		//Line Connecting Code
 		
@@ -129,9 +129,9 @@ public class TileSpawn : MonoBehaviour {
 		
 		//Filling in the center of map
 		bool filled;
-		for(int i = 0; i < 5; i++){
+		for(int i = 0; i < 7; i++){
 			filled = false;
-			for(int j = 0; j < 5; j++){		
+			for(int j = 0; j < 7; j++){		
 				if (map[i,j].filled) {
 					filled = !filled;
 				}
@@ -145,7 +145,15 @@ public class TileSpawn : MonoBehaviour {
 		for(int i=1; i <= 3; i++){
 			if(!map[i,1].filled){
 				map[i,1] = new Tile(new Vector3(i,0,1));
+				map[i,1].occupied = true;
 			}
 		}
+		for(int i=2; i <= 4; i++){
+			if(!map[i,4].filled){
+				map[i,4] = new Tile(new Vector3(i,0,4));
+				map[i,4].occupied = true;
+			}
+		}
+
 	}
 }

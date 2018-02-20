@@ -9,7 +9,7 @@ public class Target : MonoBehaviour {
 	public Type type;
 
 	public Target(){
-		type = Type.Unknown;
+		this.type = Type.Unknown;
 	}
 
 	public void setType(Type newType){

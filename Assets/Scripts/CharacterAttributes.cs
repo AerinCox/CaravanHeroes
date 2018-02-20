@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CharacterAttributes : MonoBehaviour {
 
+	public enum Job {Swordman, SkeleSwordman, Archer, Slime, Cleric, Ghoul, Unknown};
+
 	int hp;
 	int str; //for every 1 point of str, +1 damage
 	int atkRange;
@@ -12,6 +14,8 @@ public class CharacterAttributes : MonoBehaviour {
 	Point location;
 	GameObject self;
 	public bool isDead;
+	bool selectable;
+	Job job;
 
 	public CharacterAttributes(){
 		this.str = -1;
@@ -22,18 +26,11 @@ public class CharacterAttributes : MonoBehaviour {
 		this.location = new Point(-1,-1);
 		this.self = null;
 		this.isDead = false;
+		this.selectable = true;
+		this.job = Job.Unknown;
 	}
 
-	public CharacterAttributes(int str, int def, int spd, int hp, int atkRange, GameObject g){
-		this.str = str;
-		this.def = def;
-		this.spd = spd;
-		this.hp = hp;
-		this.self = g;
-		this.isDead = false;
-		this.atkRange = atkRange;
-	}
-	public CharacterAttributes(int str, int def, int spd, int hp, int atkRange, Point location, GameObject g){
+	public CharacterAttributes(int str, int def, int spd, int hp, int atkRange, Point location, GameObject g, Job job){
 		this.str = str;
 		this.def = def;
 		this.hp = hp;
@@ -42,8 +39,10 @@ public class CharacterAttributes : MonoBehaviour {
 		this.self = g;
 		this.isDead = false;
 		this.atkRange = atkRange;
+		this.selectable = true;
+		this.job = job;
 	}
-	public void setAttributes(int str, int def, int spd, int hp, int atkRange, Point location, GameObject g){
+	public void setAttributes(int str, int def, int spd, int hp, int atkRange, Point location, GameObject g, Job job){
 		this.str = str;
 		this.def = def;
 		this.hp = hp;
@@ -51,6 +50,16 @@ public class CharacterAttributes : MonoBehaviour {
 		this.location = location;
 		this.self = g;
 		this.atkRange = atkRange;
+		this.selectable = true;
+		this.job = job;
+	}
+	
+	public void setSelectable(bool x){
+		this.selectable = x;
+	}
+	
+	public bool isSelectable(){
+		return this.selectable;
 	}
 
 	public void setSprite(Sprite sprite){
@@ -66,6 +75,10 @@ public class CharacterAttributes : MonoBehaviour {
 	}
 	public int getAtkRange(){
 		return this.atkRange;
+	}
+	
+	public Job getJob(){
+		return this.job;
 	}
 	
 	public void setSpd(int spd){
