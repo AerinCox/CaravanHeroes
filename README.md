@@ -1,6 +1,6 @@
 ## What is this project?
 
-This project is Caravan Heroes, a Android Unity game in progress!
+This project was an android game called Caravan Heroes. It is no longer in production, F.
 
 Current Active Members:
 
